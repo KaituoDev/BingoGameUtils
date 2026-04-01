@@ -23,6 +23,9 @@ public final class BingoGameUtils extends JavaPlugin {
         service.registerPlugin(voiceChatPlugin);
         voiceChatPlugin.createSignalListener();
         getLogger().info("BingoGameUtils VoicechatManager enabled.");
+
+        // Enable /team_teleport Command
+        getCommand("team_teleport").setExecutor(new TeamTeleportCommand(this));
     }
 
     @Override

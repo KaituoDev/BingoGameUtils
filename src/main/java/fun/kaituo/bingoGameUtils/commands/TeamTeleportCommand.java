@@ -1,0 +1,123 @@
+package fun.kaituo.bingoGameUtils.commands;
+
+import fun.kaituo.bingoGameUtils.BingoGameUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
+
+public class TeamTeleportCommand implements CommandExecutor {
+    private final String WRONG_COMMAND_USAGE = "§c正确用法：直接输入/team_teleport 或 /ttp";
+
+    private final int TELEPORT_COOLDOWN = 60; // in server ticks
+
+    private final static HashMap<ChatColor, Set<Player>> teamPlayerMap = new HashMap<>();
+
+    private final static HashMap<Player, Integer> playerTeleportCooldown = new HashMap<>();
+
+    public TeamTeleportCommand(BingoGameUtils plugin) {
+        playerTeleportCooldown.clear();
+
+        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            playerTeleportCooldown.replaceAll((p, i) -> (i - 1));
+
+            for (Player p : playerTeleportCooldown.keySet()) {
+                if (playerTeleportCooldown.get(p) <= 0) {
+                    playerTeleportCooldown.remove(p);
+                }
+            }
+        }, TELEPORT_COOLDOWN, 1);
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
+        if (!command.getName().equalsIgnoreCase("team_teleport")) {
+            return false;
+        }
+
+        if (!(commandSender instanceof Player player)) {
+            commandSender.sendMessage("§c只有玩家才能使用此命令！");
+            return true;
+        }
+        if (!s.isEmpty()) {
+            player.sendMessage(WRONG_COMMAND_USAGE);
+            return true;
+        }
+        if (strings.length > 0) {
+            player.sendMessage(WRONG_COMMAND_USAGE);
+            return true;
+        }
+
+        Team team = Bukkit.getScoreboardManager().getMainScoreboard().getEntityTeam(player);
+        if (team == null) {
+            player.sendMessage("§c你必须在有效队伍中才能使用此命令！");
+            return true;
+        }
+        if (!team.hasColor()) {
+            player.sendMessage("§c你必须在有效队伍中才能使用此命令！");
+            return true;
+        }
+
+        if (playerTeleportCooldown.containsKey(player)
+                && playerTeleportCooldown.get(player) > 0) {
+            player.sendMessage("§c队内传送冷却中！");
+            return true;
+        }
+
+        refreshTeamPlayerMap();
+        ArrayList<Player> teleportablePlayers = new ArrayList<>();
+        for (Player p : teamPlayerMap.get(team.getColor())) {
+            if (p == null) {
+                teamPlayerMap.get(team.getColor()).remove(p);
+                continue;
+            }
+            if (p.isDead()) {
+                continue;
+            }
+            if (p.getLocation().getBlockX() < 10000 && p.getLocation().getBlockZ() < 10000) {
+                continue;
+            }
+
+            teleportablePlayers.add(p);
+        }
+
+        if (teleportablePlayers.isEmpty()) {
+            player.sendMessage("§c未找到可传送的队友！");
+            return true;
+        }
+
+        Collections.shuffle(teleportablePlayers);
+        player.teleport(teleportablePlayers.getFirst());
+        player.sendMessage("§a已将你传送至" + teleportablePlayers.getFirst().getName());
+        playerTeleportCooldown.put(player, TELEPORT_COOLDOWN);
+        return false;
+    }
+
+    private static void refreshTeamPlayerMap() {
+        Scoreboard mainScoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+
+        teamPlayerMap.clear();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Team team = mainScoreboard.getEntityTeam(player);
+            if (team == null) {
+                continue;
+            }
+            if (!team.hasColor()) {
+                continue;
+            }
+
+            ChatColor color = team.getColor();
+            if (!teamPlayerMap.containsKey(color)) {
+                teamPlayerMap.put(color, new HashSet<>());
+            }
+            teamPlayerMap.get(color).add(player);
+        }
+    }
+}
