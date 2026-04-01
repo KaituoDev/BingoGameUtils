@@ -1,0 +1,11 @@
+name: BingoGameUtils
+version: '1.0.0'
+main: fun.kaituo.bingoGameUtils.BingoGameUtils
+api-version: '1.21'
+authors: [ APairOfMoons ]
+commands:
+  team_teleport:
+    description: Teleport to a random teammate.
+    usage: /team_teleport or /ttp
+    default: true
+    aliases: [ttp]
