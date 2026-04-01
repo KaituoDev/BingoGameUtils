@@ -1,6 +1,5 @@
 package fun.kaituo.bingoGameUtils.voicechat;
 
-import de.maxhenkel.voicechat.api.VoicechatConnection;
 import de.maxhenkel.voicechat.api.VoicechatPlugin;
 import de.maxhenkel.voicechat.api.VoicechatServerApi;
 import de.maxhenkel.voicechat.api.events.EventRegistration;
@@ -8,8 +7,6 @@ import de.maxhenkel.voicechat.api.events.PlayerConnectedEvent;
 import de.maxhenkel.voicechat.api.events.VoicechatServerStartedEvent;
 import fun.kaituo.bingoGameUtils.BingoGameUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 public class VoicechatManagerPlugin implements VoicechatPlugin {
@@ -38,15 +35,16 @@ public class VoicechatManagerPlugin implements VoicechatPlugin {
     }
 
     public void onPlayerConnected(PlayerConnectedEvent pce) {
-        VoicechatConnection connection = pce.getConnection();
+        Player player = (Player) pce.getConnection().getPlayer().getPlayer();
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            if (connection == null) {
+            if (player == null) {
                 return;
             }
 
-            Player player = (Player) connection.getPlayer();
-            JoinTeamGroups.joinTeamGroup(player, connection, api);
+            if (!JoinTeamGroups.joinGroup(player, api.getConnectionOf(player.getUniqueId()), api)) {
+                JoinLobbyGroup.joinGroup(player, api);
+            }
         }, JOIN_GROUPS_DELAY);
 
     }
@@ -57,20 +55,13 @@ public class VoicechatManagerPlugin implements VoicechatPlugin {
         registration.registerEvent(VoicechatServerStartedEvent.class, this::onServerStarted);
     }
 
-    public void createSignalListener() {
-        Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            World world = Bukkit.getServer().getWorlds().getFirst();
+    public static void onGameStart() {
+        JoinTeamGroups.initializeTeamGroups(api);
+        JoinTeamGroups.formTeamGroups(api);
+    }
 
-            if (world.getBlockAt(187, 140, 79).getType().equals(Material.LIME_STAINED_GLASS)) {
-                JoinLobbyGroup.initializeGroups(api);
-                JoinLobbyGroup.allJoinLobby(api);
-                world.getBlockAt(187, 140, 79).setType(Material.AIR);
-
-            } else if (world.getBlockAt(187, 140, 78).getType().equals(Material.RED_STAINED_GLASS)) {
-                JoinTeamGroups.initializeTeamGroups(api);
-                JoinTeamGroups.formTeamGroups(api);
-                world.getBlockAt(187, 140, 78).setType(Material.AIR);
-            }
-        }, 20, 1);
+    public static void onGameEnd() {
+        JoinLobbyGroup.initializeGroups(api);
+        JoinLobbyGroup.allJoinLobby(api);
     }
 }

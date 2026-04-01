@@ -61,11 +61,11 @@ public class JoinTeamGroups {
                 continue;
             }
 
-            joinTeamGroup(player, connection, api);
+            joinGroup(player, connection, api);
         }
     }
 
-    public static Boolean joinTeamGroup(Player player, VoicechatConnection connection, VoicechatServerApi api) {
+    public static Boolean joinGroup(Player player, VoicechatConnection connection, VoicechatServerApi api) {
         Team team = Bukkit.getScoreboardManager().getMainScoreboard().getEntityTeam(player);
         if (team == null) {
             return false;

@@ -38,13 +38,17 @@ public class JoinLobbyGroup {
 
     public static void allJoinLobby(VoicechatServerApi api) {
         for (Player player : Bukkit.getOnlinePlayers()) {
-            VoicechatConnection connection = api.getConnectionOf(player.getUniqueId());
-            if (connection == null) {
-                continue;
-            }
-
-            connection.setGroup(api.getGroup(LOBBY_GROUP_UUID));
-            player.sendMessage(LOBBY_JOIN_MESSAGE);
+            joinGroup(player, api);
         }
+    }
+
+    public static void joinGroup(Player player, VoicechatServerApi api) {
+        VoicechatConnection connection = api.getConnectionOf(player.getUniqueId());
+        if (connection == null) {
+            return;
+        }
+
+        connection.setGroup(api.getGroup(LOBBY_GROUP_UUID));
+        player.sendMessage(LOBBY_JOIN_MESSAGE);
     }
 }

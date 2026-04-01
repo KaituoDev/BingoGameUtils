@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>fun.kaituo</groupId>
-    <artifactId>BingoVoicechatManager</artifactId>
-    <version>1.0</version>
+    <artifactId>BingoGameUtils</artifactId>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
-    <name>BingoVoicechatManager</name>
+    <name>BingoGameUtils</name>
 
     <properties>
         <java.version>21</java.version>

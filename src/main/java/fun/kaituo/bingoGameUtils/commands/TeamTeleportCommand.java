@@ -6,14 +6,16 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class TeamTeleportCommand implements CommandExecutor {
+public class TeamTeleportCommand implements CommandExecutor, TabCompleter {
     private final String WRONG_COMMAND_USAGE = "§c正确用法：直接输入/team_teleport 或 /ttp";
 
     private final int TELEPORT_COOLDOWN = 60; // in server ticks
@@ -44,10 +46,6 @@ public class TeamTeleportCommand implements CommandExecutor {
 
         if (!(commandSender instanceof Player player)) {
             commandSender.sendMessage("§c只有玩家才能使用此命令！");
-            return true;
-        }
-        if (!s.isEmpty()) {
-            player.sendMessage(WRONG_COMMAND_USAGE);
             return true;
         }
         if (strings.length > 0) {
@@ -98,6 +96,11 @@ public class TeamTeleportCommand implements CommandExecutor {
         player.sendMessage("§a已将你传送至" + teleportablePlayers.getFirst().getName());
         playerTeleportCooldown.put(player, TELEPORT_COOLDOWN);
         return false;
+    }
+
+    @Override
+    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String alias, String[] args) {
+        return List.of("");
     }
 
     private static void refreshTeamPlayerMap() {
