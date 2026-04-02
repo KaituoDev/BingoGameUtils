@@ -18,7 +18,7 @@ import java.util.*;
 public class TeamTeleportCommand implements CommandExecutor, TabCompleter {
     private final String WRONG_COMMAND_USAGE = "§c正确用法：直接输入/team_teleport 或 /ttp";
 
-    private final int TELEPORT_COOLDOWN = 60; // in server ticks
+    private final int TELEPORT_COOLDOWN = 59; // in server ticks
 
     private final static HashMap<ChatColor, Set<Player>> teamPlayerMap = new HashMap<>();
 
@@ -38,7 +38,7 @@ public class TeamTeleportCommand implements CommandExecutor, TabCompleter {
         }, TELEPORT_COOLDOWN, 1);
     }
 
-    @Override
+    @Override // Return true if a valid command, otherwise false
     public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String @NotNull [] strings) {
         if (!command.getName().equalsIgnoreCase("team_teleport")) {
             return false;
@@ -65,7 +65,8 @@ public class TeamTeleportCommand implements CommandExecutor, TabCompleter {
 
         if (playerTeleportCooldown.containsKey(player)
                 && playerTeleportCooldown.get(player) > 0) {
-            player.sendMessage("§c队内传送冷却中！");
+            int remainSeconds = playerTeleportCooldown.get(player)/20 + 1;
+            player.sendMessage("§c你需要等待§6" + remainSeconds + "§c秒，才能再次尝试传送至队友！");
             return true;
         }
 
@@ -74,6 +75,9 @@ public class TeamTeleportCommand implements CommandExecutor, TabCompleter {
         for (Player p : teamPlayerMap.get(team.getColor())) {
             if (p == null) {
                 teamPlayerMap.get(team.getColor()).remove(p);
+                continue;
+            }
+            if (p.getUniqueId() == player.getUniqueId()) {
                 continue;
             }
             if (p.isDead()) {
@@ -95,7 +99,7 @@ public class TeamTeleportCommand implements CommandExecutor, TabCompleter {
         player.teleport(teleportablePlayers.getFirst());
         player.sendMessage("§a已将你传送至" + teleportablePlayers.getFirst().getName());
         playerTeleportCooldown.put(player, TELEPORT_COOLDOWN);
-        return false;
+        return true;
     }
 
     @Override
