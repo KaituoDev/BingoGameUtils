@@ -83,7 +83,8 @@ public class TeamTeleportCommand implements CommandExecutor, TabCompleter {
             if (p.isDead()) {
                 continue;
             }
-            if (p.getLocation().getBlockX() < 10000 && p.getLocation().getBlockZ() < 10000) {
+            if (p.getLocation().getBlockX() < 10000 && p.getLocation().getBlockX() > -10000
+                    && p.getLocation().getBlockZ() < 10000 && p.getLocation().getBlockZ() > -10000) {
                 continue;
             }
 
